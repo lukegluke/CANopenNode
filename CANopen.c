@@ -603,9 +603,17 @@ CO_ReturnError_t CO_CANopenInit(
             CO->em,
             CO->SDO[0],
            &CO->NMT->operatingState,
-            OD_COB_ID_SYNCMessage,
+		    OD_COB_ID_SYNC,
+#ifdef OD_communicationCyclePeriod
             OD_communicationCyclePeriod,
-            OD_synchronousCounterOverflowValue,
+#else
+			0U,
+#endif
+#ifdef OD_synchronousCounterOverflowValue
+			OD_synchronousCounterOverflowValue,
+#else
+			0U,
+#endif
             CO->CANmodule[0],
             CO_RXCAN_SYNC,
             CO->CANmodule[0],
@@ -855,7 +863,11 @@ CO_NMT_reset_cmd_t CO_process(
             co->emPr,
             NMTisPreOrOperational,
             timeDifference_ms * 10,
-            OD_inhibitTimeEMCY,
+#ifdef OD_inhibitTimeEMCY
+			OD_inhibitTimeEMCY,
+#else
+			0U,
+#endif
             timerNext_ms);
 
 
@@ -863,7 +875,11 @@ CO_NMT_reset_cmd_t CO_process(
             co->NMT,
             timeDifference_ms,
             OD_producerHeartbeatTime,
+#ifdef OD_NMTStartup
             OD_NMTStartup,
+#else
+			0U,
+#endif
             OD_errorRegister,
             OD_errorBehavior,
             timerNext_ms);
@@ -892,7 +908,14 @@ bool_t CO_process_SYNC(
 {
     bool_t syncWas = false;
 
-    switch(CO_SYNC_process(co->SYNC, timeDifference_us, OD_synchronousWindowLength)){
+    switch(CO_SYNC_process(co->SYNC,
+    					   timeDifference_us,
+#ifdef OD_synchronousWindowLength
+						   OD_synchronousWindowLength
+#else
+						   0U
+#endif
+			)){
         case 1:     //immediately after the SYNC message
             syncWas = true;
             break;
